@@ -1,0 +1,357 @@
+MainForm.cs
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Text;
+using System.Windows.Forms;
+using ZedGraph;
+namespace ConsoleApplication1
+{
+public partial class MainForm : Form
+{
+ public MainForm(double[] x0, double[] p, int c)
+{
+InitializeComponent ();
+ }
+ private void DrawGraph(double[] x0, double[] p, int c)
+{
+GraphPane pane = zedGraph.GraphPane;
+pane.CurveList.Clear ();
+ pane.YAxis.Title.Text = "Число обумовленості";
+ pane.XAxis.Title.Text = "Номер ітерації";
+ pane.Title.Text = "Залежність обумовленості від приближення до екстремуму";
+PointPairList list1 = new PointPairList ();
+ PointPairList list2 = new PointPairList();
+ PointPairList list3 = new PointPairList();
+ double[,] x = MFR.go(x0,p[0],c);
+ double[,] x1 = MO.go(x0, p[1], p[2], (int)p[3], (int)p[4], (int)p[5], p[0], c);
+ double[,] x2 = MK.go(x0, p[0], c);
+ for (int i = 0; i < x.GetLength(1);i++ )
+ list1.Add(i, 1 / alglib.rcond.rmatrixrcond1(Func.dF(Matrix.eq(x, i),c),
+x.GetLength(0)));
+ for (int i = 0; i < x1.GetLength(1); i++)
+ list2.Add(i, 1 / alglib.rcond.rmatrixrcond1(Func.dF(Matrix.eq(x1, i),c),
+x1.GetLength(0)));
+ for (int i = 0; i < x2.GetLength(1); i++)
+ list3.Add(i, 1 / alglib.rcond.rmatrixrcond1(Func.dF(Matrix.eq(x2, i), c),
+x2.GetLength(0)));
+ LineItem myCurve1 = pane.AddCurve ("Флетчера-Рівса", list1, Color.Blue,
+SymbolType.None);
+ LineItem myCurve2 = pane.AddCurve("Яровий", list2, Color.Brown, SymbolType.None);
+ LineItem myCurve3 = pane.AddCurve("Коші", list3, Color.DimGray, SymbolType.None);
+zedGraph.AxisChange ();
+zedGraph.Invalidate ();
+}
+ private void Table(double[] x0, double[] p, int c)
+ {
+ double[,] x1 = MFR.go(x0, p[0], c);
+ double[,] x2 = MO.go(x0, p[1], p[2], (int)p[3], (int)p[4], (int)p[5], p[0], c);
+ double[,] x3 = MK.go(x0, p[0], c);
+ int n1 = x1.GetLength(1), n2 = x2.GetLength(1), n3 = x3.GetLength(1), n;
+ n = Math.Max(Math.Max(n1, n2),n3);
+82
+ double[,] xx1 = new double[x0.Length, n];
+ double[,] xx2 = new double[x0.Length, n];
+ double[,] xx3 = new double[x0.Length, n];
+ string[] str1 = new string[n];
+ string
+[] str2 = new string[n];
+ string[] str3 = new string[n];
+ for
+(int i = 0; i < n1; i++)
+
+{
+ str1[i] += "( "
+;
+ for
+(int j = 0; j < x0.Length; j++)
+
+{
+ x1[j, i] = Math.Floor(x1[j, i] * 100) / 100;
+ str1[i] += x1[j, i].ToString() + " "
+;
+
+}
+ str1[i] += ")"
+;
+
+}
+ for
+(int i = 0; i < n2; i++)
+
+{
+ str2[i] += "( "
+;
+ for
+(int j = 0; j < x0.Length; j++)
+
+{
+ x2[j, i] = Math.Floor(x2[j, i] * 100) / 100;
+str2[i] += x2[j, i].ToString() + " "
+;
+
+}
+ str2[i] += ")"
+;
+
+}
+ for
+(int i = 0; i < n3; i++)
+
+{
+ str3[i] += "( "
+;
+ for
+(int j = 0; j < x0.Length; j++)
+
+{
+ x3[j, i] = Math.Floor(x3[j, i] * 100) / 100;
+str3[i] += x3[j, i].ToString() + " "
+;
+
+}
+ str3[i] += ")"
+;
+
+}
+ if (n3 == n)
+
+{
+ for
+(int j = 0; j < x0.Length; j++)
+
+{
+ for
+(int i = 0; i < n1; i++)
+ xx1[j, i] = x1[j, i];
+ for
+(int i = 0; i < n2; i++)
+ xx2[j, i] = x2[j, i];
+
+}
+ for
+(int j = 0; j < x0.Length; j++)
+
+{
+ for
+(int i = n1; i < n; i++
+)
+
+{
+ xx1[j, i] = 0;
+str1[i] =
+"--
+"
+;
+
+}
+for
+(int i = n2; i < n; i++)
+
+{
+ xx2[j, i] = 0;
+ str2[i] =
+"--
+"
+;
+
+}
+
+}
+ for
+(int i = 0; i < n; i++)
+ 
+83
+ this.dataGridView1.Rows.Add(i, (1 /
+alglib.rcond.rmatrixrcond1(Func.dF(Matrix.eq(xx1, i),c), xx1.GetLength(0))), str1[i],
+ (1 / alglib.rcond.rmatrixrcond1(Func.dF(Matrix.eq(xx2, i),c),
+xx2.GetLength(0))) ,str2[i],
+ (1 / alglib.rcond.rmatrixrcond1(Func.dF(Matrix.eq(x3, i),c),
+x3.GetLength(0))) ,str3[i]);
+ }
+ if (n2 == n)
+ {
+ for (int j = 0; j < x0.Length; j++)
+ {
+ for (int i = 0; i < n1; i++)
+ xx1[j, i] = x1[j, i];
+ for (int i = 0; i < n3; i++)
+ xx3[j, i] = x3[j, i];
+ }
+ for (int j = 0; j < x0.Length; j++)
+ {
+ for (int i = n1; i < n; i++)
+ {
+ xx1[j, i] = 0;
+ str1[i] = "--";
+ }
+for (int i = n3; i < n; i++)
+ {
+ xx3[j, i] = 0;
+str3[i] = "--";
+ }
+ }
+ for (int i = 0; i < n; i++)
+ this.dataGridView1.Rows.Add(i, (1 /
+alglib.rcond.rmatrixrcond1(Func.dF(Matrix.eq(xx1, i),c), xx1.GetLength(0))), str1[i],
+ (1 / alglib.rcond.rmatrixrcond1(Func.dF(Matrix.eq(x2, i),c),
+x2.GetLength(0))), str2[i],
+ (1 / alglib.rcond.rmatrixrcond1(Func.dF(Matrix.eq(xx3, i),c),
+xx3.GetLength(0))), str3[i]);
+ } if (n1 == n)
+ {
+ for (int j = 0; j < x0.Length; j++)
+ {
+ for (int i = 0; i < n3; i++)
+ xx3[j, i] = x3[j, i];
+ for (int i = 0; i < n2; i++)
+ xx2[j, i] = x2[j, i];
+ }
+ for (int j = 0; j < x0.Length; j++)
+ {
+ for (int i = n3; i < n; i++)
+ {
+ xx3[j, i] = 0;
+str3[i] = "--";
+ }
+for (int i = n2; i < n; i++)
+ {
+ xx2[j, i] = 0;
+str2[i] = "--";
+ }
+ }
+ for (int i = 0; i < n; i++)
+84
+ this.dataGridView1.Rows.Add(i, (1 /
+alglib.rcond.rmatrixrcond1(Func.dF(Matrix.eq(x1, i),c), x1.GetLength(0))), str1[i],
+ (1 / alglib.rcond.rmatrixrcond1(Func.dF(Matrix.eq(xx2, i),c),
+xx2.GetLength(0))), str2[i],
+ (1 / alglib.rcond.rmatrixrcond1(Func.dF(Matrix.eq(xx3, i),c),
+xx3.GetLength(0))), str3[i]);
+ }
+ }
+ private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+ {
+ }
+ private void MainForm_Load(object sender, EventArgs e)
+ {
+ }
+ private void dataGridView1_CellContentClick_1(object sender, DataGridViewCellEventArgs
+e)
+ {
+ }
+ private void textBox5_TextChanged(object sender, EventArgs e)
+ {
+ }
+ private void richTextBox1_TextChanged(object sender, EventArgs e)
+ {
+ if (comboBox1.SelectedIndex == 1)
+ richTextBox1.Text = "X0 = -1.2, X1 = 1\n eps = 0.01\na = 0.1, b = 0.9\n n1= 2,
+n2 = 5, n3 = 3";
+ if (comboBox1.SelectedIndex == 0)
+ richTextBox1.Text = "X0 = 1, X1 = 0.05\nX2 = 0.5, X3 = 0.5\n eps = 0.01\na =
+0.1, b = 0.9\n n1= 2, n2 = 5, n3 = 3";
+ }
+ private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+ {
+ }
+ private void button2_Click(object sender, EventArgs e)
+ {
+ richTextBox1.Text="1";
+ }
+ private void button1_Click(object sender, EventArgs e)
+ {
+ int c = comboBox1.SelectedIndex;
+ double[] x0 = new double[4];
+ double[] x1 = new double[2];
+ double[] p = new double[6];
+ p[0] = Convert.ToDouble(textBox7.Text);
+ p[1] = Convert.ToDouble(textBox6.Text);
+ p[2] = Convert.ToDouble(textBox12.Text);
+85
+ p[3] = Convert.ToDouble(textBox9.Text);
+ p[4] = Convert.ToDouble(textBox13.Text);
+ p[5] = Convert.ToDouble(textBox11.Text);
+ if (c == 1)
+
+{
+ x1[0] = Convert.ToDouble(textBox1.Text);
+ x1[1] = Convert.ToDouble(textBox4.Text);
+ DrawGraph(x1, p, c);
+ Table(x1, p, c);
+ Question frm1 = new Question(x1, p, c);
+ frm1.Show();
+
+}
+ if (c == 0)
+
+{
+ x0[0] = Convert.ToDouble(textBox1.Text);
+ x0[1] = Convert.ToDouble(textBox4.Text);
+ x0[2] = Convert.ToDouble(textBox3.Text);
+ x0[3] = Convert.ToDouble(textBox2.Text);
+ DrawGraph(x0, p, c);
+ Table(x0, p, c);
+ }
+
+}
+ private void button3_Click(object sender, EventArgs e)
+
+{
+ int c = comboBox1.SelectedIndex;
+
+i
+f (c == 0)
+
+{
+ textBox7.Text = "0,01"
+;
+ textBox6.Text = "0,3"
+;
+ textBox12.Text = "0,01"
+;
+ textBox9.Text = "2"
+;
+ textBox13.Text = "4"
+;
+ textBox11.Text = "3
+"
+;
+ textBox1.Text = "1"
+;
+ textBox4.Text = "0,05"
+;
+ textBox3.Text = "0,5"
+;
+ textBox2.Text = "0,5";
+
+}
+ if (c == 1)
+
+{
+ textBox7.Text = "0,01"
+;
+ textBox6.Text = "0,1"
+;
+ textBox12.Text = "0,9"
+;
+ textBox9.Text = "2"
+;
+ textBox13.Text = "5"
+;
+ textBox11.Text = "3"
+;
+ textBox1.Text =
+"
+-1,2"
+;
+ textBox4.Text = "1"
+;
+
+}
+
+}
+}
+}
