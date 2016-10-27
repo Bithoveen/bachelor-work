@@ -1,0 +1,37 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+namespace ConsoleApplication1
+{
+ class MK
+ {
+ static public double[,] go(double[] x0, double e, int c)
+ {
+ int n = 100;
+ int k = 0;
+ double a = 0;
+87
+ double[,] x = new double[x0.Length, n];
+ double[,] s = new double[x0.Length, n];
+ s = Matrix.eq(s, Matrix.scal(-1, Func.df(x0,c)), 0);
+ x = Matrix.eq(x, x0, 0);
+ while ( (Matrix.norm(Func.df(Matrix.eq(x, k),c)) > e) && (k<99) )
+ {
+ for (int i = 0; i < x.GetLength(0); i++)
+ {
+ a = Findmin.min1(Matrix.eq(x, k), Matrix.eq(s, k),c);
+ x[i, k + 1] = x[i, k] + a * s[i, k];
+ }
+ for (int i = 0; i < x.GetLength(0); i++)
+ s[i, k + 1] = -Func.df(Matrix.eq(x, k + 1),c)[i];
+ k++;
+ }
+ double[,] res = new double[x0.Length, k];
+ for (int i = 0; i < x0.Length; i++)
+ for (int j = 0; j < k; j++)
+ res[i, j] = x[i, j];
+ return res;
+ }
+ }
+}
