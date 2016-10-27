@@ -1,0 +1,58 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+namespace ConsoleApplication1
+{
+ class MO
+ {
+ static public double[,] go(double[] x0, double a, double b, int t1, int t2, int t3,
+double e, int c)
+ {
+ int n = 100;
+ int num = 0;
+ int i = 0, j = 0, k = 0;
+ double[,] x = new double[x0.Length, n];
+ double[,] r = new double[x0.Length, n];
+ double[,] g = new double[x0.Length, n];
+ g = MFR1.go(x0, t1,c);
+ for (i = 0; i < x0.Length; i++)
+ {
+ for (j = 0; j < t1; j++)
+ r[i, j] = g[i, j];
+ x[i, 0] = g[i, t1 - 1];
+ }
+ num = j;
+ x0 = Matrix.sum(x0, b);
+ g = MFR1.go(x0, t2 ,c);
+ for (i = 0; i < x0.Length; i++)
+88
+ {
+ for (j = 0; j < t2; j++)
+ r[i, j + num] = g[i, j];
+ x[i, 1] = g[i, t2 - 1];
+ }
+ num += j;
+ while ((Matrix.norm(Func.df(Matrix.eq(x, k),c)) > e)&&(num<70))
+ {
+ for (i = 0; i < x0.Length; i++)
+ x[i, k + 2] = x[i, k + 1] + a * (x[i, k + 1] - x[i, k]);
+ g = MFR1.go(Matrix.eq(x, k + 2), t3 ,c);
+ for (i = 0; i < x0.Length; i++)
+ {
+ x[i, k + 2] = g[i, t3 - 1];
+ for (j = 0; j < t3; j++)
+ r[i, j + num] = g[i, j];
+ }
+ num += j;
+ k++;
+ }
+ double[,] res = new double[x0.Length, num-5];
+ for (j = 0; j < num-5; j++)
+ {
+ for (i = 0; i < x0.Length; i++)
+ res[i, j] = r[i, j];
+ }
+ return res;
+ }
+ }
