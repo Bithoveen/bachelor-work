@@ -1,0 +1,41 @@
+using System;
+using System.Collections.Generic;
+86
+using System.Linq;
+using System.Text;
+namespace ConsoleApplication1
+{
+ class MFR
+ {
+ static public double[,] go(double[] x0, double e, int c)
+ {
+ int n = 100;
+ int k = 0;
+ double a = 0;
+ double[,] x = new double[x0.Length,n];
+ double[] b = new double[n];
+ double[,] s = new double[x0.Length,n];
+ s = Matrix.eq(s,Matrix.scal(-1,Func.df(x0,c)),0);
+ x = Matrix.eq(x,x0,0);
+ b[0] = 0;
+ while ((Matrix.norm(Func.df(Matrix.eq(x, k),c)) > e) && (k<70))
+ {
+ for (int i = 0; i < x.GetLength(0); i++)
+ {
+ a = Findmin.min(Matrix.eq(x, k), Matrix.eq(s, k), c);
+ x[i, k+1] = x[i, k] + a * s[i, k];
+ }
+ b[k + 1] = Math.Pow(Matrix.norm(Func.df(Matrix.eq(x, k + 1), c )) /
+Matrix.norm(Func.df(Matrix.eq(x, k) , c)), 2);
+
+ for (int i = 0; i < x.GetLength(0); i++)
+ s[i, k + 1] = -Func.df(Matrix.eq(x, k + 1),c)[i] + b[k + 1] * s[i, k];
+
+ k++;
+ }
+ double[,] res=new double[x0.Length,k];
+ for (int i = 0; i < x0.Length; i++)
+ for (int j = 0; j < k; j++)
+ res[i, j] = x[i, j];
+ return res;
+ }
